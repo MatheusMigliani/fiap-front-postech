@@ -1,0 +1,14 @@
+{
+  "name": "@fiap-blog/eslint-config",
+  "version": "1.0.0",
+  "description": "Shared ESLint configurations",
+  "main": "index.js",
+  "files": [
+    "index.js",
+    "react.js",
+    "node.js"
+  ],
+  "dependencies": {
+    "eslint": "^9.39.1"
+  }
+}

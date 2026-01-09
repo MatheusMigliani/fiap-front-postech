@@ -1,0 +1,59 @@
+name: Docker Compose Test
+
+on:
+  pull_request:
+    branches: ['master']
+  push:
+    branches: ['master']
+
+jobs:
+  docker-compose-test:
+    name: Test Docker Compose Setup
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Create .env.production file
+        run: |
+          cat > .env.production << EOF
+          VITE_API_URL=http://localhost:3000
+          EOF
+
+      - name: Build Docker Compose
+        run: docker-compose build
+
+      - name: Start Docker Compose services
+        run: docker-compose up -d
+
+      - name: Wait for services to be ready
+        run: |
+          echo "Waiting for services to start..."
+          sleep 30
+
+      - name: Check if frontend is running
+        run: |
+          curl -f http://localhost:80 || exit 1
+
+      - name: Show container logs
+        if: failure()
+        run: docker-compose logs
+
+      - name: Stop Docker Compose services
+        if: always()
+        run: docker-compose down
+
+  validate-dockerfile:
+    name: Validate Dockerfile
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Run Hadolint (Dockerfile linter)
+        uses: hadolint/hadolint-action@v3.1.0
+        with:
+          dockerfile: Dockerfile
+          failure-threshold: warning

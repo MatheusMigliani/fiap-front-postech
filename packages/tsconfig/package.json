@@ -1,0 +1,11 @@
+{
+  "name": "@fiap-blog/tsconfig",
+  "version": "1.0.0",
+  "description": "Shared TypeScript configurations",
+  "main": "index.js",
+  "files": [
+    "base.json",
+    "react.json",
+    "node.json"
+  ]
+}

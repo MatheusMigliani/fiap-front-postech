@@ -1,0 +1,47 @@
+{
+  "name": "@fiap-blog/backend",
+  "version": "1.0.0",
+  "private": true,
+  "description": "FIAP Blog - Backend API REST em Node.js",
+  "main": "src/app.js",
+  "scripts": {
+    "start": "node src/app.js",
+    "dev": "nodemon src/app.js",
+    "build": "echo 'No build needed for Node.js'",
+    "test": "jest --coverage",
+    "test:watch": "jest --watch",
+    "lint": "eslint src/**/*.js",
+    "lint:fix": "eslint src/**/*.js --fix",
+    "type-check": "echo 'No type checking for plain JS'",
+    "swagger": "node swagger.js",
+    "clean": "rm -rf coverage .turbo node_modules"
+  },
+  "keywords": [
+    "blog",
+    "education",
+    "api",
+    "nodejs",
+    "express",
+    "mongodb"
+  ],
+  "author": "FIAP - Tech Challenge Fase 3",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "@fiap-blog/shared": "workspace:*",
+    "cors": "^2.8.5",
+    "dotenv": "^17.2.3",
+    "express": "^5.1.0",
+    "express-validator": "^7.2.1",
+    "mongoose": "^8.19.1",
+    "swagger-autogen": "^2.23.7",
+    "swagger-ui-express": "^5.0.1"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.37.0",
+    "eslint": "^9.37.0",
+    "jest": "^30.2.0",
+    "nodemon": "^3.1.10",
+    "supertest": "^7.1.4"
+  }
+}

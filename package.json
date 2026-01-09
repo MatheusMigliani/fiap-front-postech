@@ -1,40 +1,39 @@
 {
-  "name": "fiap-front",
+  "name": "fiap-blog-monorepo",
+  "version": "1.0.0",
   "private": true,
-  "version": "0.0.0",
-  "type": "module",
+  "description": "FIAP Blog - Monorepo com Frontend React e Backend Node.js usando apps/packages pattern",
   "scripts": {
-    "dev": "vite",
-    "build": "tsc -b && vite build",
-    "lint": "eslint .",
-    "preview": "vite preview"
-  },
-  "dependencies": {
-    "@hookform/resolvers": "^3.10.0",
-    "@reduxjs/toolkit": "^2.11.2",
-    "axios": "^1.13.2",
-    "react": "^19.2.0",
-    "react-dom": "^19.2.0",
-    "react-hook-form": "^7.69.0",
-    "react-redux": "^9.2.0",
-    "react-router-dom": "^7.11.0",
-    "react-toastify": "^10.0.6",
-    "styled-components": "^6.1.19",
-    "zod": "^3.25.76"
+    "dev": "turbo run dev",
+    "dev:frontend": "turbo run dev --filter=@fiap-blog/frontend",
+    "dev:backend": "turbo run dev --filter=@fiap-blog/backend",
+    "build": "turbo run build",
+    "build:frontend": "turbo run build --filter=@fiap-blog/frontend",
+    "build:backend": "turbo run build --filter=@fiap-blog/backend",
+    "lint": "turbo run lint",
+    "type-check": "turbo run type-check",
+    "test": "turbo run test",
+    "clean": "turbo run clean && rm -rf node_modules",
+    "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md}\"",
+    "docker:build": "docker build -t fiap-blog-monorepo .",
+    "docker:run": "docker run -p 80:80 fiap-blog-monorepo",
+    "docker:compose:up": "docker-compose up -d",
+    "docker:compose:down": "docker-compose down",
+    "docker:compose:logs": "docker-compose logs -f"
   },
   "devDependencies": {
-    "@eslint/js": "^9.39.1",
-    "@types/node": "^24.10.1",
-    "@types/react": "^19.2.5",
-    "@types/react-dom": "^19.2.3",
-    "@types/styled-components": "^5.1.36",
-    "@vitejs/plugin-react-swc": "^4.2.2",
-    "eslint": "^9.39.1",
-    "eslint-plugin-react-hooks": "^7.0.1",
-    "eslint-plugin-react-refresh": "^0.4.24",
-    "globals": "^16.5.0",
-    "typescript": "~5.9.3",
-    "typescript-eslint": "^8.46.4",
-    "vite": "^7.2.4"
-  }
+    "@turbo/gen": "^2.4.3",
+    "prettier": "^3.4.2",
+    "turbo": "^2.4.3",
+    "typescript": "^5.9.3"
+  },
+  "packageManager": "pnpm@9.0.0",
+  "engines": {
+    "node": ">=18.0.0",
+    "pnpm": ">=9.0.0"
+  },
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ]
 }
