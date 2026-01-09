@@ -1,12 +1,15 @@
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import { authService } from '@/api/services/auth.service';
 import { AuthState, LoginCredentials, User } from '@/types/auth.types';
-import { setAuthToken, removeAuthToken, getStoredToken } from '@/utils/storage';
 
+/**
+ * Estado inicial da autenticação
+ * Token não é armazenado mais (gerenciado por httpOnly cookie)
+ */
 const initialState: AuthState = {
   user: null,
-  token: getStoredToken(),
-  isAuthenticated: !!getStoredToken(),
+  token: null, // Não usado mais (cookie httpOnly)
+  isAuthenticated: false,
   loading: false,
   error: null,
 };
@@ -62,14 +65,19 @@ const authSlice = createSlice({
     clearError: (state) => {
       state.error = null;
     },
+    /**
+     * Define as credenciais do usuário
+     * Token não é mais armazenado (gerenciado por cookie httpOnly)
+     */
     setCredentials: (state, action: PayloadAction<{ user: User; token: string }>) => {
       state.user = action.payload.user;
-      state.token = action.payload.token;
+      state.token = null; // Não armazena mais o token
       state.isAuthenticated = true;
-      setAuthToken(action.payload.token);
+      // Token gerenciado automaticamente pelo cookie httpOnly
     },
   },
   extraReducers: (builder) => {
+    // Login
     builder
       .addCase(login.pending, (state) => {
         state.loading = true;
@@ -78,9 +86,8 @@ const authSlice = createSlice({
       .addCase(login.fulfilled, (state, action) => {
         state.loading = false;
         state.user = action.payload.user;
-        state.token = action.payload.token;
+        state.token = null; // Cookie httpOnly gerenciado pelo backend
         state.isAuthenticated = true;
-        setAuthToken(action.payload.token);
       })
       .addCase(login.rejected, (state, action) => {
         state.loading = false;
@@ -88,6 +95,7 @@ const authSlice = createSlice({
         state.isAuthenticated = false;
       });
 
+    // Logout
     builder
       .addCase(logout.pending, (state) => {
         state.loading = true;
@@ -97,16 +105,17 @@ const authSlice = createSlice({
         state.user = null;
         state.token = null;
         state.isAuthenticated = false;
-        removeAuthToken();
+        // Cookie removido pelo backend
       })
       .addCase(logout.rejected, (state) => {
         state.loading = false;
         state.user = null;
         state.token = null;
         state.isAuthenticated = false;
-        removeAuthToken();
+        // Cookie removido pelo backend mesmo em caso de erro
       });
 
+    // Validação de autenticação
     builder
       .addCase(checkAuthStatus.pending, (state) => {
         state.loading = true;
@@ -121,7 +130,7 @@ const authSlice = createSlice({
         state.user = null;
         state.token = null;
         state.isAuthenticated = false;
-        removeAuthToken();
+        // Cookie inválido ou expirado
       });
   },
 });

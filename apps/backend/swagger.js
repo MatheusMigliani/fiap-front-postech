@@ -15,10 +15,22 @@ const doc = {
   schemes: ['http'],
   consumes: ['application/json'],
   produces: ['application/json'],
+  securityDefinitions: {
+    cookieAuth: {
+      type: 'apiKey',
+      in: 'cookie',
+      name: 'auth_token',
+      description: 'Token JWT armazenado em cookie httpOnly'
+    }
+  },
   tags: [
     {
       name: 'API',
       description: 'Informações gerais da API'
+    },
+    {
+      name: 'Auth',
+      description: 'Autenticação e autorização de usuários'
     },
     {
       name: 'Posts',
@@ -72,6 +84,38 @@ const doc = {
           message: 'O título é obrigatório'
         }
       ]
+    },
+    RegisterUser: {
+      email: 'professor@fiap.com.br',
+      password: 'senha123',
+      name: 'Prof. João Silva',
+      role: 'user'
+    },
+    LoginCredentials: {
+      email: 'professor@fiap.com.br',
+      password: 'senha123'
+    },
+    LoginResponse: {
+      success: true,
+      message: 'Login realizado com sucesso',
+      data: {
+        user: {
+          _id: '507f1f77bcf86cd799439011',
+          email: 'professor@fiap.com.br',
+          name: 'Prof. João Silva',
+          role: 'user',
+          createdAt: '2025-10-14T00:00:00.000Z',
+          updatedAt: '2025-10-14T00:00:00.000Z'
+        }
+      }
+    },
+    UserResponse: {
+      _id: '507f1f77bcf86cd799439011',
+      email: 'professor@fiap.com.br',
+      name: 'Prof. João Silva',
+      role: 'user',
+      createdAt: '2025-10-14T00:00:00.000Z',
+      updatedAt: '2025-10-14T00:00:00.000Z'
     }
   }
 };

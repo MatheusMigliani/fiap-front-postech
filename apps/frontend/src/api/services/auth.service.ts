@@ -1,74 +1,53 @@
+import api from '@/api/axios.config';
 import { LoginCredentials, AuthResponse, User } from '@/types/auth.types';
 
-const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
-
-const MOCK_USERS = [
-  {
-    id: '1',
-    email: 'professor@fiap.com.br',
-    password: 'fiap2024',
-    name: 'Professor FIAP',
-    role: 'professor',
-  },
-];
-
+/**
+ * Serviço de autenticação
+ * Gerencia login, logout e validação de token usando httpOnly cookies
+ */
 class AuthService {
+  /**
+   * Realiza login do usuário
+   * O token JWT é armazenado automaticamente em cookie httpOnly pelo backend
+   */
   async login(credentials: LoginCredentials): Promise<AuthResponse> {
-    await delay(800);
+    const response = await api.post('/auth/login', credentials);
 
-    const user = MOCK_USERS.find(
-      (u) => u.email === credentials.email && u.password === credentials.password
-    );
-
-    if (!user) {
-      throw new Error('Credenciais inválidas');
-    }
-
-    const token = btoa(`${user.email}:${Date.now()}`);
-
+    // Cookie setado automaticamente pelo navegador
     return {
-      user: {
-        id: user.id,
-        email: user.email,
-        name: user.name,
-        role: user.role,
-      },
-      token,
+      user: response.data.data.user,
+      token: '', // Token não é retornado (está no cookie httpOnly)
     };
   }
 
+  /**
+   * Realiza logout do usuário
+   * Remove o cookie httpOnly no backend
+   */
   async logout(): Promise<void> {
-    await delay(300);
+    await api.post('/auth/logout');
   }
 
+  /**
+   * Valida o token JWT armazenado no cookie
+   * Retorna os dados do usuário se o token for válido
+   */
   async validateToken(): Promise<{ user: User }> {
-    await delay(300);
+    const response = await api.get('/auth/validate');
+    return {
+      user: response.data.data.user,
+    };
+  }
 
-    const token = localStorage.getItem('auth_token');
-    if (!token) {
-      throw new Error('Token não encontrado');
-    }
-
-    try {
-      const decoded = atob(token);
-      const [email] = decoded.split(':');
-
-      const user = MOCK_USERS.find((u) => u.email === email);
-      if (!user) {
-        throw new Error('Usuário não encontrado');
-      }
-
-      return {
-        user: {
-          id: user.id,
-          email: user.email,
-          name: user.name,
-          role: user.role,
-        },
-      };
-    } catch {
-      throw new Error('Token inválido');
-    }
+  /**
+   * Busca os dados do usuário autenticado atual
+   * Requer autenticação (cookie httpOnly)
+   */
+  async getCurrentUser(): Promise<{ user: User }> {
+    const response = await api.get('/auth/me');
+    return {
+      user: response.data.data.user,
+    };
   }
 }
 
