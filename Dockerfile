@@ -14,30 +14,20 @@ RUN npm install -g pnpm@9
 
 # Copy workspace configuration
 COPY pnpm-workspace.yaml package.json pnpm-lock.yaml ./
+COPY packages ./packages
 
 # Copy frontend package files
 COPY apps/frontend/package.json apps/frontend/pnpm-lock.yaml* ./apps/frontend/
 
 # Install dependencies using pnpm workspaces
 RUN pnpm install --frozen-lockfile --filter frontend
-
-# Copy frontend source
-COPY apps/frontend ./apps/frontend
-
-# Build frontend
-WORKDIR /app/apps/frontend
-RUN pnpm run build
-
+# ... (o resto do stage frontend)
+# ...
 # Stage 2: Prepare Backend
-FROM node:20-alpine AS backend-builder
-
-WORKDIR /app
-
-# Install pnpm
-RUN npm install -g pnpm@9
-
+# ...
 # Copy workspace configuration
 COPY pnpm-workspace.yaml package.json pnpm-lock.yaml ./
+COPY packages ./packages
 
 # Copy backend package files
 COPY apps/backend/package.json ./apps/backend/

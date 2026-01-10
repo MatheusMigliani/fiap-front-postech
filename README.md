@@ -1,430 +1,150 @@
 # FIAP Blog - Monorepo (Apps/Packages Pattern)
 
-Sistema de blogging completo desenvolvido como monorepo profissional usando o padrão **apps/packages** com Turborepo e pnpm workspaces.
+Sistema de blogging completo desenvolvido como monorepo profissional usando o padrão **apps/packages** com Turborepo e pnpm workspaces. Este projeto foi desenvolvido como parte do Tech Challenge da Fase 03 da Pós-graduação em Full Stack Development da FIAP.
 
-## 🏗️ Arquitetura Apps/Packages
+## 🏗️ Arquitetura
+
+O projeto utiliza uma arquitetura de monorepo com `pnpm workspaces` e `Turborepo` para gerenciar múltiplos pacotes e aplicações de forma eficiente.
 
 ```
 fiap-blog-monorepo/
 ├── apps/
 │   ├── frontend/              # @fiap-blog/frontend - React + TypeScript
-│   │   ├── src/
-│   │   ├── public/
-│   │   └── package.json
-│   │
 │   └── backend/               # @fiap-blog/backend - Node.js + Express
-│       ├── src/
-│       └── package.json
 │
 ├── packages/
 │   ├── shared/                # @fiap-blog/shared - Types & Utils
-│   │   ├── src/types/
-│   │   └── src/utils/
-│   │
 │   ├── tsconfig/              # @fiap-blog/tsconfig - TS configs
-│   │   ├── base.json
-│   │   ├── react.json
-│   │   └── node.json
-│   │
 │   └── eslint-config/         # @fiap-blog/eslint-config
-│       └── index.js
 │
-├── pnpm-workspace.yaml        # pnpm workspaces
-├── turbo.json                 # Turborepo config
-├── Dockerfile                 # Container único
-├── docker-compose.yml
-└── package.json               # Root scripts
+├── .github/
+│   └── workflows/             # CI/CD - GitHub Actions
+│
+├── Dockerfile                 # Container único para produção
+├── docker-compose.yml         # Orquestração local com Docker
+└── turbo.json                 # Configuração do Turborepo
 ```
 
 ## 🚀 Tecnologias
 
 ### Stack Principal
-- **pnpm** - Package manager com workspaces
-- **Turborepo** - Build system para monorepos
-- **Docker** - Containerização
-- **Nginx** - Proxy reverso
+- **pnpm** com workspaces
+- **Turborepo** para build system
+- **Docker** & **Docker Compose** para containerização
+- **Nginx** como proxy reverso em produção
 
 ### Frontend (@fiap-blog/frontend)
-- React 19 + TypeScript 5.9
-- Redux Toolkit - Estado
-- React Router v7 - Navegação
-- Styled Components - CSS-in-JS
-- Vite - Build tool
-- Zod + React Hook Form - Validação
+- **React 19** & **TypeScript**
+- **Vite** como build tool
+- **Redux Toolkit** para gerenciamento de estado
+- **React Router v7** para navegação
+- **Styled Components** para estilização CSS-in-JS
+- **Fetch API** para consumo de endpoints REST
 
 ### Backend (@fiap-blog/backend)
-- Node.js 18 + Express 5
-- MongoDB + Mongoose
-- Swagger UI - Documentação
-- Jest - Testes
+- **Node.js** & **Express**
+- **MongoDB** com **Mongoose**
+- **JWT (JSON Web Tokens)** para autenticação
+- **Swagger** para documentação da API
+- **Jest** para testes
 
-### Packages Internos
-- **@fiap-blog/shared** - Types e utils compartilhados
-- **@fiap-blog/tsconfig** - Configs TypeScript
-- **@fiap-blog/eslint-config** - Configs ESLint
+---
 
-## 📦 Instalação
+## 📦 Instalação e Setup
 
 ### Pré-requisitos
 - Node.js >= 18.0.0
 - pnpm >= 9.0.0
+- Docker
 
 ```bash
-# Instalar pnpm globalmente
+# Instalar pnpm globalmente, caso não tenha
 npm install -g pnpm@9
 ```
 
-### Setup Local
+### 1. Setup Local (Modo Desenvolvimento)
 
 ```bash
-# 1. Instalar todas dependências (apps + packages)
+# Clone o repositório
+git clone https://github.com/MatheusMigliani/fiap-front-postech.git
+cd fiap-front-postech
+
+# Instale todas as dependências do workspace
 pnpm install
 
-# 2. Iniciar MongoDB
-docker run -d -p 27017:27017 --name mongo mongo:7-jammy
+# Inicie o container do MongoDB
+docker-compose up -d mongo
 
-# 3. Rodar em modo desenvolvimento
+# Crie o arquivo .env do backend
+# Navegue até a pasta apps/backend, copie .env.example para .env
+# e preencha a variável JWT_SECRET com um valor seguro.
+# Ex: JWT_SECRET=seu-segredo-super-secreto-de-32-caracteres
+
+# Rode os apps de frontend e backend em modo de desenvolvimento
 pnpm dev
 ```
+Após estes passos, a aplicação estará disponível em:
+- **Frontend:** `http://localhost:5173`
+- **Backend API:** `http://localhost:3000`
 
-Isso inicia:
-- Frontend: http://localhost:5173
-- Backend: http://localhost:3000
-
-### Docker (Recomendado)
+### 2. Docker (Modo Produção)
+Este é o método recomendado para simular o ambiente de produção.
 
 ```bash
-# Build e start do container único
-docker-compose up -d
+# Suba todos os serviços (app + banco de dados)
+docker-compose up -d --build
 
-# Ver logs
+# Ver logs da aplicação
 docker-compose logs -f app
 
-# Parar
+# Parar tudo
 docker-compose down
 ```
-
-Acesse: **http://localhost**
-- Frontend: `/`
-- Backend API: `/api/*`
-- Health Check: `/health`
-
-## 🔧 Scripts Turborepo
-
-### Global (root)
-
-```bash
-# Desenvolvimento
-pnpm dev                  # Roda todos os apps
-pnpm dev:frontend         # Apenas frontend
-pnpm dev:backend          # Apenas backend
-
-# Build
-pnpm build                # Build de tudo
-pnpm build:frontend       # Build do frontend
-pnpm build:backend        # Build do backend
-
-# Qualidade
-pnpm lint                 # Lint em tudo
-pnpm type-check           # Type check
-pnpm test                 # Testes
-
-# Limpeza
-pnpm clean                # Remove builds e node_modules
-
-# Formatação
-pnpm format               # Prettier em todo código
-```
-
-### Por App
-
-```bash
-# Frontend
-cd apps/frontend
-pnpm dev                  # Vite dev server
-pnpm build                # Production build
-pnpm lint                 # ESLint
-pnpm type-check           # TypeScript check
-
-# Backend
-cd apps/backend
-pnpm dev                  # Nodemon
-pnpm start                # Production
-pnpm test                 # Jest
-pnpm swagger              # Gerar docs
-```
-
-## 📚 Packages Compartilhados
-
-### @fiap-blog/shared
-
-Types e utilities compartilhados entre front e back.
-
-**Usage:**
-```typescript
-import { Post, formatDate, truncateText } from '@fiap-blog/shared';
-
-const post: Post = {
-  title: 'My Post',
-  content: 'Long content...',
-  author: 'John',
-  createdAt: new Date()
-};
-
-console.log(formatDate(post.createdAt)); // "08/01/2026 às 23:45"
-console.log(truncateText(post.content, 100)); // "Long content... (truncated)..."
-```
-
-**Exports:**
-- `types` - `Post`, `ApiResponse`, `CreatePostDto`, etc.
-- `utils/date` - `formatDate`, `formatRelativeTime`
-- `utils/validation` - `isValidEmail`, `sanitizeHtml`, `slugify`
-
-Ver mais: [packages/shared/README.md](packages/shared/README.md)
-
-### @fiap-blog/tsconfig
-
-Configurações TypeScript compartilhadas.
-
-**Usage:**
-```json
-{
-  "extends": "@fiap-blog/tsconfig/react.json"
-}
-```
-
-### @fiap-blog/eslint-config
-
-Configurações ESLint compartilhadas.
-
-## 🌐 API Endpoints
-
-**Base URL:** `http://localhost/api`
-
-### Posts
-```
-GET    /api/posts           - Lista posts
-GET    /api/posts/:id       - Post específico
-GET    /api/posts/search    - Busca (?q=termo)
-POST   /api/posts           - Criar post
-PUT    /api/posts/:id       - Atualizar
-DELETE /api/posts/:id       - Deletar
-```
-
-### Health
-```
-GET    /api/health          - Status API
-GET    /health              - Status container
-```
-
-**Swagger:** http://localhost:3000/swagger
-
-## 🐳 Docker
-
-### Container Único
-
-Um único container executa:
-1. **Nginx** (port 80) - Serve frontend + proxy backend
-2. **Node.js** (port 3000) - Backend API
-3. **Frontend build** - Arquivos estáticos
-
-### Roteamento Nginx
-
-```nginx
-/              → apps/frontend/dist (React SPA)
-/api/*         → localhost:3000 (Node.js API)
-/health        → Nginx health check
-```
-
-### Build Multi-stage
-
-```dockerfile
-Stage 1: Build Frontend
-Stage 2: Build Backend
-Stage 3: Production (Nginx + Node + Frontend build)
-```
-
-## ⚡ Turborepo
-
-Turborepo cacheia builds para velocidade máxima.
-
-### Pipeline
-
-```json
-{
-  "build": {
-    "dependsOn": ["^build"],           // Build dependencies first
-    "outputs": ["dist/**"]
-  },
-  "dev": {
-    "cache": false,
-    "persistent": true                  // Keep running
-  }
-}
-```
-
-### Benefícios
-
-- ✅ **Cache inteligente** - Não rebuilda o que não mudou
-- ✅ **Parallel execution** - Roda tasks em paralelo
-- ✅ **Dependency graph** - Entende ordem de builds
-- ✅ **Remote caching** - Compartilha cache entre devs
-
-## 🔑 Configuração
-
-### Variáveis de Ambiente
-
-**Backend (.env):**
-```env
-NODE_ENV=development
-PORT=3000
-MONGODB_URI=mongodb://localhost:27017/fiap-blog
-```
-
-**Frontend (.env.local):**
-```env
-VITE_API_URL=/api
-```
-
-## ✅ Funcionalidades
-
-### Frontend
-- [x] Autenticação de professores
-- [x] Lista de posts com busca
-- [x] CRUD completo de posts
-- [x] Painel administrativo
-- [x] Design responsivo
-- [x] Types compartilhados
-
-### Backend
-- [x] API REST completa
-- [x] CRUD de posts
-- [x] Busca por keywords
-- [x] Validação de dados
-- [x] Swagger docs
-- [x] Health checks
-- [x] Types compartilhados
-
-## 🧪 Testes
-
-```bash
-# Todos os testes
-pnpm test
-
-# Backend tests
-cd apps/backend
-pnpm test
-pnpm test:watch
-```
-
-## 📊 Vantagens do Apps/Packages
-
-### Antes (Simples Monorepo)
-- ❌ Código duplicado entre apps
-- ❌ Types não compartilhados
-- ❌ Configs duplicadas
-- ❌ Sem cache de builds
-
-### Depois (Apps/Packages)
-- ✅ **Zero duplication** - Packages compartilhados
-- ✅ **Type safety** - Types compartilhados entre front/back
-- ✅ **Consistency** - Configs centralizadas
-- ✅ **Fast builds** - Turborepo cache
-- ✅ **Scalable** - Fácil adicionar novos apps/packages
-
-## 🚀 Deploy
-
-### Desenvolvimento
-```bash
-docker-compose up -d
-```
-
-### Produção
-
-```bash
-# Build imagem
-docker build -t fiap-blog:latest .
-
-# Run
-docker run -p 80:80 \
-  -e MONGODB_URI=mongodb://mongo:27017/fiap-blog \
-  fiap-blog:latest
-```
-
-### Docker Hub/GHCR
-```bash
-# Pull
-docker pull ghcr.io/<usuario>/fiap-blog:latest
-
-# Run
-docker-compose up -d
-```
-
-## 🤝 Contribuindo
-
-### Adicionando um App
-
-```bash
-cd apps/
-mkdir new-app
-cd new-app
-pnpm init
-# Adicione "@new-app" ao name
-# Adicione deps: pnpm add @fiap-blog/shared
-```
-
-### Adicionando um Package
-
-```bash
-cd packages/
-mkdir new-package
-cd new-package
-pnpm init
-# Adicione "@fiap-blog/new-package" ao name
-```
-
-Turborepo automaticamente detecta novos apps/packages.
-
-## 📈 Performance
-
-### Build Times (com Turborepo cache)
-
-- **Cold build:** ~2-3 min
-- **Cached build:** ~5-10s ⚡
-- **Incremental:** ~30s
-
-### Docker Image Size
-
-- **Multi-stage:** ~150MB
-- **Production only:** Sem dev dependencies
-
-## 🔒 Segurança
-
-- Headers de segurança (Nginx)
-- CORS configurado
-- Input validation (Express Validator + Zod)
-- Dependências auditadas (pnpm audit)
-- Types seguros compartilhados
-
-## 📄 Licença
-
-Projeto acadêmico - FIAP 2024
-
-## 🎓 Tech Challenge - Fase 03
-
-Requisitos atendidos:
-- ✅ Frontend React responsivo
-- ✅ Backend Node.js REST API
-- ✅ Integração frontend-backend
-- ✅ Docker + Docker Compose
-- ✅ CI/CD completo
-- ✅ **Arquitetura apps/packages profissional**
-- ✅ **Turborepo para builds rápidos**
-- ✅ **Packages compartilhados**
-- ✅ **Type safety entre apps**
+Acesse a aplicação em **`http://localhost`**.
 
 ---
 
+## 🔑 Autenticação
+
+Para acessar as áreas restritas (criação, edição e exclusão de posts), utilize as credenciais do usuário padrão, que é criado automaticamente ao iniciar o backend:
+
+- **Email:** `professor@fiap.com.br`
+- **Senha:** `fiap2024`
+
+---
+
+## 🌐 API Endpoints
+
+A documentação completa da API está disponível via Swagger quando o backend está rodando.
+
+**URL Base (Local):** `http://localhost:3000`
+**URL Base (Docker):** `/api` (através do proxy Nginx)
+
+**Swagger UI:** `http://localhost:3000/swagger`
+
+### Principais Endpoints
+```
+# Auth
+POST   /api/auth/login      - Realiza login
+
+# Posts
+GET    /api/posts           - Lista todos os posts
+GET    /api/posts/:id       - Busca um post específico
+GET    /api/posts/search    - Busca posts por keyword (?q=termo)
+POST   /api/posts           - Cria um novo post (requer auth)
+PUT    /api/posts/:id       - Atualiza um post (requer auth)
+DELETE /api/posts/:id       - Deleta um post (requer auth)
+```
+
+---
+
+## ✅ Desafio Cumprido
+
+O projeto atende a todos os requisitos funcionais, técnicos e entregáveis do Tech Challenge:
+
+- **Funcionais:** Todas as páginas (Home, Leitura, Criação, Edição, Admin) e o fluxo de autenticação estão implementados.
+- **Técnicos:** Utiliza React com hooks, Styled Components, Redux Toolkit e consome a API REST.
+- **Entregáveis:** O repositório contém `Dockerfile`, `docker-compose.yml` e scripts de CI/CD no diretório `.github/workflows`. A documentação (`README.md`) detalha a arquitetura, setup e fluxos do projeto.
+
+---
 **Desenvolvido por:** FIAP Tech Challenge - Fase 3
-**Arquitetura:** Apps/Packages Pattern com Turborepo
-**Ano:** 2024
