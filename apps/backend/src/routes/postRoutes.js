@@ -2,6 +2,7 @@ const express = require('express');
 const { body, query } = require('express-validator');
 const postController = require('../controllers/postController');
 const validateRequest = require('../middleware/validator');
+const { authMiddleware } = require('../middleware/authMiddleware');
 
 const router = express.Router();
 
@@ -121,10 +122,13 @@ router.get('/:id', (req, res, next) => {
 });
 
 // POST /posts
-router.post('/', createPostValidation, validateRequest, (req, res, next) => {
+router.post('/', authMiddleware, createPostValidation, validateRequest, (req, res, next) => {
   /*
     #swagger.tags = ['Posts']
-    #swagger.description = 'Cria um novo post educacional'
+    #swagger.description = 'Cria um novo post educacional (requer autenticação)'
+    #swagger.security = [{
+      bearerAuth: []
+    }]
     #swagger.parameters['body'] = {
       in: 'body',
       description: 'Dados do post',
@@ -139,15 +143,22 @@ router.post('/', createPostValidation, validateRequest, (req, res, next) => {
       description: 'Dados inválidos',
       schema: { $ref: '#/definitions/ValidationError' }
     }
+    #swagger.responses[401] = {
+      description: 'Não autenticado',
+      schema: { $ref: '#/definitions/Error' }
+    }
   */
   postController.createPost(req, res, next);
 });
 
 // PUT /posts/:id
-router.put('/:id', updatePostValidation, validateRequest, (req, res, next) => {
+router.put('/:id', authMiddleware, updatePostValidation, validateRequest, (req, res, next) => {
   /*
     #swagger.tags = ['Posts']
-    #swagger.description = 'Atualiza um post existente'
+    #swagger.description = 'Atualiza um post existente (requer autenticação)'
+    #swagger.security = [{
+      bearerAuth: []
+    }]
     #swagger.parameters['id'] = {
       in: 'path',
       description: 'ID do post',
@@ -168,6 +179,10 @@ router.put('/:id', updatePostValidation, validateRequest, (req, res, next) => {
       description: 'Dados inválidos',
       schema: { $ref: '#/definitions/ValidationError' }
     }
+    #swagger.responses[401] = {
+      description: 'Não autenticado',
+      schema: { $ref: '#/definitions/Error' }
+    }
     #swagger.responses[404] = {
       description: 'Post não encontrado',
       schema: { $ref: '#/definitions/Error' }
@@ -177,10 +192,13 @@ router.put('/:id', updatePostValidation, validateRequest, (req, res, next) => {
 });
 
 // DELETE /posts/:id
-router.delete('/:id', (req, res, next) => {
+router.delete('/:id', authMiddleware, (req, res, next) => {
   /*
     #swagger.tags = ['Posts']
-    #swagger.description = 'Remove um post pelo ID'
+    #swagger.description = 'Remove um post pelo ID (requer autenticação)'
+    #swagger.security = [{
+      bearerAuth: []
+    }]
     #swagger.parameters['id'] = {
       in: 'path',
       description: 'ID do post a ser removido',
@@ -193,6 +211,10 @@ router.delete('/:id', (req, res, next) => {
         success: true,
         message: 'Post removido com sucesso'
       }
+    }
+    #swagger.responses[401] = {
+      description: 'Não autenticado',
+      schema: { $ref: '#/definitions/Error' }
     }
     #swagger.responses[404] = {
       description: 'Post não encontrado',

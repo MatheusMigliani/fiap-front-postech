@@ -1,55 +1,67 @@
 # ==================================
 # FIAP Blog - Monorepo Dockerfile
 # Frontend (React) + Backend (Node.js)
+# Otimizado para pnpm workspaces
 # ==================================
 
 # Stage 1: Build Frontend
-FROM node:18-alpine AS frontend-builder
+FROM node:20-alpine AS frontend-builder
 
-WORKDIR /app/frontend
+WORKDIR /app
 
-# Copy frontend dependencies
-COPY apps/frontend/package*.json ./
-COPY apps/frontend/pnpm-lock.yaml* ./
+# Install pnpm
+RUN npm install -g pnpm@9
 
-# Install dependencies
-RUN npm install -g pnpm && \
-    pnpm install --frozen-lockfile || npm ci
+# Copy workspace configuration
+COPY pnpm-workspace.yaml package.json pnpm-lock.yaml ./
+
+# Copy frontend package files
+COPY apps/frontend/package.json apps/frontend/pnpm-lock.yaml* ./apps/frontend/
+
+# Install dependencies using pnpm workspaces
+RUN pnpm install --frozen-lockfile --filter frontend
 
 # Copy frontend source
-COPY apps/frontend/ ./
+COPY apps/frontend ./apps/frontend
 
 # Build frontend
-RUN npm run build
+WORKDIR /app/apps/frontend
+RUN pnpm run build
 
 # Stage 2: Prepare Backend
-FROM node:18-alpine AS backend-builder
+FROM node:20-alpine AS backend-builder
 
-WORKDIR /app/backend
+WORKDIR /app
 
-# Copy backend dependencies
-COPY apps/backend/package*.json ./
+# Install pnpm
+RUN npm install -g pnpm@9
+
+# Copy workspace configuration
+COPY pnpm-workspace.yaml package.json pnpm-lock.yaml ./
+
+# Copy backend package files
+COPY apps/backend/package.json ./apps/backend/
 
 # Install production dependencies only
-RUN npm ci --only=production
+RUN pnpm install --frozen-lockfile --filter backend --prod
 
 # Copy backend source
-COPY apps/backend/ ./
+COPY apps/backend ./apps/backend
 
 # Stage 3: Production
-FROM node:18-alpine
+FROM node:20-alpine
 
-# Install nginx for serving frontend and proxying backend
-RUN apk add --no-cache nginx
+# Install nginx and wget for healthcheck
+RUN apk add --no-cache nginx wget
 
 # Create app directory
 WORKDIR /app
 
-# Copy backend from builder
-COPY --from=backend-builder /app/backend ./backend
+# Copy backend from builder (with node_modules)
+COPY --from=backend-builder /app/apps/backend ./backend
 
 # Copy frontend build from builder
-COPY --from=frontend-builder /app/frontend/dist ./frontend/dist
+COPY --from=frontend-builder /app/apps/frontend/dist ./frontend/dist
 
 # Copy nginx configuration
 COPY nginx.conf /etc/nginx/http.d/default.conf
@@ -62,13 +74,15 @@ EXPOSE 80
 
 # Create startup script
 RUN echo '#!/bin/sh' > /app/start.sh && \
-    echo 'cd /app/backend && node src/app.js &' >> /app/start.sh && \
+    echo 'echo "Starting Backend API..."' >> /app/start.sh && \
+    echo 'cd /app/backend && NODE_ENV=${NODE_ENV:-production} node src/app.js &' >> /app/start.sh && \
+    echo 'echo "Starting Nginx..."' >> /app/start.sh && \
     echo 'nginx -g "daemon off;"' >> /app/start.sh && \
     chmod +x /app/start.sh
 
 # Healthcheck
 HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
-    CMD wget --no-verbose --tries=1 --spider http://localhost/ || exit 1
+    CMD wget --no-verbose --tries=1 --spider http://localhost/health || exit 1
 
 # Start both services
 CMD ["/app/start.sh"]

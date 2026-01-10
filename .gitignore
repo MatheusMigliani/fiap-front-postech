@@ -12,6 +12,11 @@ dist
 dist-ssr
 *.local
 
+# Environment variables
+.env
+.env.local
+.env.production
+
 # Documentation (except root README.md)
 *.md
 *.pdf
@@ -34,3 +39,4 @@ docs/
 # Backend artifacts
 coverage/
 test-posts.json
+/apps/backend/nul

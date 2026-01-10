@@ -28,7 +28,13 @@ export const PostCard = ({ post, showActions = false, onEdit, onDelete }: PostCa
   return (
     <S.CardWrapper>
       {!showActions ? (
-        <S.StyledLink to={`/posts/${post.id}`}>{cardContent}</S.StyledLink>
+        <S.ClickableContent>
+          <S.StyledLink to={`/posts/${post.id}`}>{cardContent}</S.StyledLink>
+          <S.ReadMoreButton to={`/posts/${post.id}`} aria-label={`Ler mais sobre ${post.title}`}>
+            Ler mais
+            <S.ArrowIcon />
+          </S.ReadMoreButton>
+        </S.ClickableContent>
       ) : (
         <>
           {cardContent}

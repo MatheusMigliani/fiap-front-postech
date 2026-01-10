@@ -5,8 +5,10 @@ const swaggerDocument = require('../swagger-output.json');
 const config = require('./config/environment');
 const connectDatabase = require('./config/database');
 const postRoutes = require('./routes/postRoutes');
+const authRoutes = require('./routes/authRoutes');
 const errorHandler = require('./middleware/errorHandler');
 const logger = require('./utils/logger');
+const { runSeeds } = require('./config/seed');
 
 const app = express();
 
@@ -66,7 +68,8 @@ app.get('/', (_req, res) => {
     message: 'Bem-vindo à API de Blogging Educacional - FIAP',
     version: config.apiVersion,
     endpoints: {
-      posts: '/posts',
+      posts: '/api/posts',
+      auth: '/api/auth',
       health: '/health',
       docs: '/swagger',
     },
@@ -80,7 +83,8 @@ app.use('/swagger', swaggerUi.serve, swaggerUi.setup(swaggerDocument, {
 }));
 
 // Rotas da API
-app.use('/posts', postRoutes);
+app.use('/api/auth', authRoutes);
+app.use('/api/posts', postRoutes);
 
 // Rota 404
 app.use((_req, res) => {
@@ -98,6 +102,9 @@ const startServer = async () => {
   try {
     // Conectar ao banco de dados
     await connectDatabase();
+
+    // Executar seeds (criar usuário padrão se não existir)
+    await runSeeds();
 
     // Iniciar servidor
     app.listen(config.port, () => {

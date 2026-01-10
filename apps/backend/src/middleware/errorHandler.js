@@ -4,6 +4,21 @@ const errorHandler = (err, req, res, _next) => {
   logger.error('Error:', err.message);
   logger.error('Stack:', err.stack);
 
+  // JWT errors
+  if (err.name === 'JsonWebTokenError') {
+    return res.status(401).json({
+      success: false,
+      message: 'Token inválido',
+    });
+  }
+
+  if (err.name === 'TokenExpiredError') {
+    return res.status(401).json({
+      success: false,
+      message: 'Token expirado',
+    });
+  }
+
   // Mongoose validation error
   if (err.name === 'ValidationError') {
     const errors = Object.values(err.errors).map(e => e.message);

@@ -19,38 +19,40 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Install pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 9
+
       - name: Setup Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node-version }}
-          cache: 'npm'
+          cache: 'pnpm'
 
-      - name: Install root dependencies
-        run: npm install
-
-      - name: Install Frontend dependencies
-        working-directory: apps/frontend
-        run: npm ci
-
-      - name: Install Backend dependencies
-        working-directory: apps/backend
-        run: npm ci
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
 
       - name: Run Frontend ESLint
         working-directory: apps/frontend
-        run: npm run lint
+        run: pnpm run lint
 
       - name: Run Backend ESLint
         working-directory: apps/backend
-        run: npm run lint
+        run: pnpm run lint
 
       - name: Run TypeScript check (Frontend)
         working-directory: apps/frontend
-        run: npx tsc --noEmit
+        run: pnpm exec tsc --noEmit
+
+      - name: Run Backend Tests
+        working-directory: apps/backend
+        run: pnpm test
+        continue-on-error: true
 
       - name: Build Frontend
         working-directory: apps/frontend
-        run: npm run build
+        run: pnpm run build
 
       - name: Upload Frontend build artifacts
         if: matrix.node-version == '20.x'
@@ -73,14 +75,13 @@ jobs:
         with:
           node-version: '20.x'
 
-      - name: Audit Frontend dependencies
-        working-directory: apps/frontend
-        run: npm audit --audit-level=moderate
-        continue-on-error: true
+      - name: Install pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 9
 
-      - name: Audit Backend dependencies
-        working-directory: apps/backend
-        run: npm audit --audit-level=moderate
+      - name: Audit dependencies
+        run: pnpm audit --audit-level=moderate
         continue-on-error: true
 
   quality-gate:

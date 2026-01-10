@@ -8,7 +8,7 @@ import * as S from './MainLayout.styles';
 
 export const MainLayout = () => {
   const dispatch = useAppDispatch();
-  const { isAuthenticated, user } = useAppSelector((state) => state.auth);
+  const { isAuthenticated, user, status, token } = useAppSelector((state) => state.auth);
   const { logout } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
@@ -21,8 +21,11 @@ export const MainLayout = () => {
         // Silent fail - token inválido ou ausente
       }
     };
-    validateAuth();
-  }, [dispatch]);
+
+    if (token && status === 'idle') {
+      validateAuth();
+    }
+  }, [dispatch, status, token]);
 
   const toggleMobileMenu = () => setMobileMenuOpen(!mobileMenuOpen);
   const closeMobileMenu = () => setMobileMenuOpen(false);

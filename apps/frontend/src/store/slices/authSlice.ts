@@ -7,6 +7,7 @@ const initialState: AuthState = {
   user: null,
   token: getStoredToken(),
   isAuthenticated: !!getStoredToken(),
+  status: 'idle',
   loading: false,
   error: null,
 };
@@ -72,10 +73,12 @@ const authSlice = createSlice({
   extraReducers: (builder) => {
     builder
       .addCase(login.pending, (state) => {
+        state.status = 'loading';
         state.loading = true;
         state.error = null;
       })
       .addCase(login.fulfilled, (state, action) => {
+        state.status = 'succeeded';
         state.loading = false;
         state.user = action.payload.user;
         state.token = action.payload.token;
@@ -83,6 +86,7 @@ const authSlice = createSlice({
         setAuthToken(action.payload.token);
       })
       .addCase(login.rejected, (state, action) => {
+        state.status = 'failed';
         state.loading = false;
         state.error = action.payload as string;
         state.isAuthenticated = false;
@@ -109,14 +113,17 @@ const authSlice = createSlice({
 
     builder
       .addCase(checkAuthStatus.pending, (state) => {
+        state.status = 'loading';
         state.loading = true;
       })
       .addCase(checkAuthStatus.fulfilled, (state, action) => {
+        state.status = 'succeeded';
         state.loading = false;
         state.user = action.payload.user;
         state.isAuthenticated = true;
       })
       .addCase(checkAuthStatus.rejected, (state) => {
+        state.status = 'failed';
         state.loading = false;
         state.user = null;
         state.token = null;
@@ -128,3 +135,4 @@ const authSlice = createSlice({
 
 export const { clearError, setCredentials } = authSlice.actions;
 export default authSlice.reducer;
+

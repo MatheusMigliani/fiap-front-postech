@@ -18,6 +18,13 @@ export const CardWrapper = styled.article`
   }
 `;
 
+export const ClickableContent = styled.div`
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  gap: ${({ theme }) => theme.spacing.md};
+`;
+
 export const Title = styled.h3`
   font-size: ${({ theme }) => theme.typography.fontSize.xl};
   color: ${({ theme }) => theme.colors.text.primary};
@@ -61,6 +68,68 @@ export const Actions = styled.div`
 export const StyledLink = styled(Link)`
   text-decoration: none;
   color: inherit;
-  display: block;
-  height: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: ${({ theme }) => theme.spacing.md};
+  flex: 1;
+  cursor: pointer;
+`;
+
+export const ReadMoreButton = styled(Link)`
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: ${({ theme }) => theme.spacing.sm};
+  padding: ${({ theme }) => `${theme.spacing.sm} ${theme.spacing.lg}`};
+  background: linear-gradient(135deg, ${({ theme }) => theme.colors.primary.main} 0%, ${({ theme }) => theme.colors.primary.light} 100%);
+  color: ${({ theme }) => theme.colors.text.contrast};
+  border: none;
+  border-radius: ${({ theme }) => theme.borderRadius.full};
+  font-size: ${({ theme }) => theme.typography.fontSize.sm};
+  font-weight: ${({ theme }) => theme.typography.fontWeight.semibold};
+  text-decoration: none;
+  cursor: pointer;
+  transition: all ${({ theme }) => theme.transitions.fast};
+  align-self: flex-end;
+  box-shadow: 0 2px 8px rgba(237, 20, 91, 0.2);
+  min-height: 44px; /* Touch target size for mobile */
+  min-width: 120px;
+
+  &:hover {
+    transform: translateX(4px);
+    box-shadow: 0 4px 12px rgba(237, 20, 91, 0.3);
+    background: linear-gradient(135deg, ${({ theme }) => theme.colors.primary.light} 0%, ${({ theme }) => theme.colors.primary.main} 100%);
+  }
+
+  &:active {
+    transform: translateX(2px);
+  }
+
+  &:focus-visible {
+    outline: 2px solid ${({ theme }) => theme.colors.primary.main};
+    outline-offset: 2px;
+  }
+
+  @media (max-width: 768px) {
+    font-size: ${({ theme }) => theme.typography.fontSize.md};
+    padding: ${({ theme }) => `${theme.spacing.md} ${theme.spacing.xl}`};
+  }
+`;
+
+export const ArrowIcon = styled.span`
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform ${({ theme }) => theme.transitions.fast};
+
+  &::after {
+    content: '→';
+    font-size: ${({ theme }) => theme.typography.fontSize.lg};
+    font-weight: ${({ theme }) => theme.typography.fontWeight.bold};
+    line-height: 1;
+  }
+
+  ${ReadMoreButton}:hover & {
+    transform: translateX(4px);
+  }
 `;
