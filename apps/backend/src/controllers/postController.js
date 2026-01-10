@@ -49,7 +49,8 @@ class PostController {
   // POST /posts - Cria novo post
   async createPost(req, res, next) {
     try {
-      const { title, content, author } = req.body;
+      const { title, content } = req.body;
+      const author = req.user.name; // Get author from authenticated user
       const post = await postService.createPost({ title, content, author });
 
       res.status(201).json({
@@ -71,11 +72,10 @@ class PostController {
   // PUT /posts/:id - Atualiza post
   async updatePost(req, res, next) {
     try {
-      const { title, content, author } = req.body;
+      const { title, content } = req.body;
       const post = await postService.updatePost(req.params.id, {
         title,
         content,
-        author,
       });
 
       res.status(200).json({

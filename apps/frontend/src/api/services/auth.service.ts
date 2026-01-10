@@ -1,112 +1,75 @@
-import api from '@/api/axios.config';
 import { API_ENDPOINTS } from '@/api/endpoints';
 import {
   LoginCredentials,
   RegisterCredentials,
   AuthResponse,
   User,
-  ApiResponse,
-  LoginApiResponse,
-  MeApiResponse,
 } from '@/types/auth.types';
+import { getStoredToken } from '@/utils/storage';
+import { API_BASE_URL } from '@/utils/constants';
+
+const handleResponse = async (response: Response) => {
+  const responseData = await response.json();
+  if (!response.ok) {
+    const errorMessage = responseData.message || responseData.error || `Erro HTTP: ${response.status}`;
+    throw new Error(errorMessage);
+  }
+  return responseData.data;
+};
+
+const getAuthHeaders = () => {
+  const token = getStoredToken();
+  return token
+    ? {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      }
+    : {
+        'Content-Type': 'application/json',
+      };
+};
 
 class AuthService {
-  /**
-   * Realiza login no sistema
-   * @param credentials - Email e senha do usuário
-   * @returns Dados do usuário e token JWT
-   * @throws Error se as credenciais forem inválidas
-   */
   async login(credentials: LoginCredentials): Promise<AuthResponse> {
-    try {
-      const response = await api.post<ApiResponse<LoginApiResponse>>(
-        API_ENDPOINTS.AUTH.LOGIN,
-        credentials
-      );
-
-      const { user, token } = response.data.data;
-
-      return {
-        user,
-        token,
-      };
-    } catch (error: any) {
-      const errorMessage =
-        error.response?.data?.message ||
-        error.response?.data?.error ||
-        'Erro ao realizar login. Verifique suas credenciais.';
-
+    const response = await fetch(`${API_BASE_URL}${API_ENDPOINTS.AUTH.LOGIN}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(credentials),
+    });
+    const responseData = await response.json();
+    if (!response.ok) {
+      const errorMessage = responseData.message || responseData.error || `Erro HTTP: ${response.status}`;
       throw new Error(errorMessage);
     }
+    return { token: responseData.token, user: responseData.data.user };
   }
 
-  /**
-   * Registra um novo usuário no sistema
-   * @param credentials - Nome, email e senha do novo usuário
-   * @returns Dados do usuário criado e token JWT
-   * @throws Error se o registro falhar
-   */
   async register(credentials: RegisterCredentials): Promise<AuthResponse> {
-    try {
-      const response = await api.post<ApiResponse<LoginApiResponse>>(
-        API_ENDPOINTS.AUTH.REGISTER,
-        credentials
-      );
-
-      const { user, token } = response.data.data;
-
-      return {
-        user,
-        token,
-      };
-    } catch (error: any) {
-      const errorMessage =
-        error.response?.data?.message ||
-        error.response?.data?.error ||
-        'Erro ao realizar cadastro. Tente novamente.';
-
+    const response = await fetch(`${API_BASE_URL}${API_ENDPOINTS.AUTH.REGISTER}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(credentials),
+    });
+    const responseData = await response.json();
+    if (!response.ok) {
+      const errorMessage = responseData.message || responseData.error || `Erro HTTP: ${response.status}`;
       throw new Error(errorMessage);
     }
+    return { token: responseData.token, user: responseData.data.user };
   }
 
-  /**
-   * Realiza logout do sistema
-   * Remove o token do localStorage através do Redux
-   */
   async logout(): Promise<void> {
-    // Logout é apenas client-side - o token será removido pelo Redux
+    // Logout is client-side, just clearing the token
     return Promise.resolve();
   }
 
-  /**
-   * Valida o token JWT atual
-   * @returns Dados atualizados do usuário
-   * @throws Error se o token for inválido ou expirado
-   */
   async validateToken(): Promise<{ user: User }> {
-    try {
-      const response = await api.get<ApiResponse<MeApiResponse>>(
-        API_ENDPOINTS.AUTH.ME
-      );
-
-      const { user } = response.data.data;
-
-      return { user };
-    } catch (error: any) {
-      const errorMessage =
-        error.response?.data?.message ||
-        error.response?.data?.error ||
-        'Token inválido ou expirado';
-
-      throw new Error(errorMessage);
-    }
+    const response = await fetch(`${API_BASE_URL}${API_ENDPOINTS.AUTH.ME}`, {
+      headers: getAuthHeaders(),
+    });
+    return handleResponse(response);
   }
 
-  /**
-   * Obtém os dados do usuário autenticado
-   * Alias para validateToken() para melhor semântica
-   * @returns Dados do usuário autenticado
-   */
   async getCurrentUser(): Promise<User> {
     const { user } = await this.validateToken();
     return user;

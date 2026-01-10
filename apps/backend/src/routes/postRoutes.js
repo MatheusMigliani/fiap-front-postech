@@ -2,7 +2,7 @@ const express = require('express');
 const { body, query } = require('express-validator');
 const postController = require('../controllers/postController');
 const validateRequest = require('../middleware/validator');
-const { authMiddleware } = require('../middleware/authMiddleware');
+const { protect } = require('../middleware/authMiddleware');
 
 const router = express.Router();
 
@@ -18,12 +18,6 @@ const createPostValidation = [
     .trim()
     .notEmpty()
     .withMessage('O conteúdo é obrigatório'),
-  body('author')
-    .trim()
-    .notEmpty()
-    .withMessage('O autor é obrigatório')
-    .isLength({ max: 100 })
-    .withMessage('O nome do autor não pode ter mais de 100 caracteres'),
 ];
 
 // Validações para atualização de post (campos opcionais)
@@ -40,13 +34,6 @@ const updatePostValidation = [
     .trim()
     .notEmpty()
     .withMessage('O conteúdo não pode estar vazio'),
-  body('author')
-    .optional()
-    .trim()
-    .notEmpty()
-    .withMessage('O autor não pode estar vazio')
-    .isLength({ max: 100 })
-    .withMessage('O nome do autor não pode ter mais de 100 caracteres'),
 ];
 
 // Validação para busca
@@ -122,7 +109,7 @@ router.get('/:id', (req, res, next) => {
 });
 
 // POST /posts
-router.post('/', authMiddleware, createPostValidation, validateRequest, (req, res, next) => {
+router.post('/', protect, createPostValidation, validateRequest, (req, res, next) => {
   /*
     #swagger.tags = ['Posts']
     #swagger.description = 'Cria um novo post educacional (requer autenticação)'
@@ -152,7 +139,7 @@ router.post('/', authMiddleware, createPostValidation, validateRequest, (req, re
 });
 
 // PUT /posts/:id
-router.put('/:id', authMiddleware, updatePostValidation, validateRequest, (req, res, next) => {
+router.put('/:id', protect, updatePostValidation, validateRequest, (req, res, next) => {
   /*
     #swagger.tags = ['Posts']
     #swagger.description = 'Atualiza um post existente (requer autenticação)'
@@ -192,7 +179,7 @@ router.put('/:id', authMiddleware, updatePostValidation, validateRequest, (req, 
 });
 
 // DELETE /posts/:id
-router.delete('/:id', authMiddleware, (req, res, next) => {
+router.delete('/:id', protect, (req, res, next) => {
   /*
     #swagger.tags = ['Posts']
     #swagger.description = 'Remove um post pelo ID (requer autenticação)'
